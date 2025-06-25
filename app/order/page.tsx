@@ -102,7 +102,7 @@ export default function CheckoutPage() {
                   <RadioGroup
                     value={selectedShipping}
                     onValueChange={handleChangeDeliveryMethod}
-                    className="flex items-center justify-center gap-6"
+                    className="md:flex md:items-center md:justify-center gap-6"
                   >
                     {shippingOptions.map((option) => (
                       <div
