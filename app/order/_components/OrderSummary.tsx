@@ -22,23 +22,84 @@ import {
   Banknote,
   CheckCircle,
   Sparkles,
+  Plus,
+  Minus,
 } from "lucide-react";
+import { useState } from "react";
+
+interface OrderItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+}
 
 interface OrderSummaryProps {
   form: UseFormReturn<AddressFormValues>;
   deliveryCost: number;
+  items?: OrderItem[];
+  onUpdateQuantity?: (itemId: string, newQuantity: number) => void;
 }
 
-const OrderSummary = ({ form, deliveryCost }: OrderSummaryProps) => {
-  const subtotal = 400;
+const OrderSummary = ({
+  form,
+  deliveryCost,
+  items = [
+    {
+      id: "1",
+      name: "Item Name",
+      price: 200,
+      quantity: 2,
+      image: "/placeholder.jpg",
+    },
+  ],
+  onUpdateQuantity,
+}: OrderSummaryProps) => {
+  const [localItems, setLocalItems] = useState<OrderItem[]>(items);
+
+  // Calculate subtotal based on current quantities
+  const subtotal = localItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
   const isFreeDelivery = deliveryCost > 0;
+
+  const handleQuantityChange = (itemId: string, newQuantity: number) => {
+    if (newQuantity < 1) return; // Prevent quantity from going below 1
+
+    const updatedItems = localItems.map((item) =>
+      item.id === itemId ? { ...item, quantity: newQuantity } : item
+    );
+
+    setLocalItems(updatedItems);
+
+    // Call parent callback if provided
+    if (onUpdateQuantity) {
+      onUpdateQuantity(itemId, newQuantity);
+    }
+  };
+
+  const increaseQuantity = (itemId: string) => {
+    const item = localItems.find((item) => item.id === itemId);
+    if (item) {
+      handleQuantityChange(itemId, item.quantity + 1);
+    }
+  };
+
+  const decreaseQuantity = (itemId: string) => {
+    const item = localItems.find((item) => item.id === itemId);
+    if (item && item.quantity > 1) {
+      handleQuantityChange(itemId, item.quantity - 1);
+    }
+  };
 
   return (
     <div className="lg:col-span-4 space-y-6 mt-8 lg:mt-0">
       <div className="sticky top-0 border border-gray-200 bg-white p-6 rounded-xl">
         {/* Header with Badge */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900">Order Summary</h2>
+          <h2 className="text-xl font-bold text-gray-900">অর্ডার সামারি</h2>
           <Badge
             variant="secondary"
             className="bg-primary/10 text-primary font-semibold"
@@ -49,43 +110,74 @@ const OrderSummary = ({ form, deliveryCost }: OrderSummaryProps) => {
 
         {/* Cart Items */}
         <div className="space-y-4 mb-6">
-          <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-            <div className="relative">
-              <Image
-                src={"/placeholder.jpg"}
-                alt={"placeholder"}
-                width={64}
-                height={64}
-                className="w-16 h-16 object-cover rounded-lg border-2 border-white shadow-sm"
-              />
-              <Badge
-                variant="secondary"
-                className="absolute -top-2 -right-2 w-6 h-6 rounded-full p-0 flex items-center justify-center text-xs font-bold"
-              >
-                2
-              </Badge>
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-gray-900 mb-1">Item Name</p>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">৳200 × 2</span>
-                <span className="font-semibold text-gray-900">৳400</span>
+          {localItems.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
+            >
+              <div className="relative">
+                <Image
+                  src={item.image}
+                  alt={item.name}
+                  width={64}
+                  height={64}
+                  className="w-16 h-16 object-cover rounded-lg border-2 border-white shadow-sm"
+                />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-gray-900 mb-2">{item.name}</p>
+
+                {/* Quantity Controls */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center border border-gray-300 rounded-lg">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 hover:bg-gray-100"
+                        onClick={() => decreaseQuantity(item.id)}
+                        disabled={item.quantity <= 1}
+                      >
+                        <Minus className="w-3 h-3" />
+                      </Button>
+                      <span className="w-12 text-center text-sm font-semibold">
+                        {item.quantity}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 hover:bg-gray-100"
+                        onClick={() => increaseQuantity(item.id)}
+                      >
+                        <Plus className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <span className="text-sm text-gray-600">
+                      ৳{item.price} each
+                    </span>
+                  </div>
+                  <span className="font-semibold text-gray-900">
+                    ৳{item.price * item.quantity}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
 
         {/* Price Breakdown */}
         <div className="space-y-3 mb-6">
           <div className="flex justify-between text-gray-700">
-            <span>Subtotal</span>
+            <span>সাবটোটাল</span>
             <span className="font-semibold">৳{subtotal}</span>
           </div>
 
           <div className="flex justify-between items-center text-gray-700">
             <div className="flex items-center gap-2">
               <Truck className="w-4 h-4 text-gray-500" />
-              <span>Delivery Charge</span>
+              <span>ডেলিভারি চার্জ</span>
             </div>
             <span
               className={
@@ -114,7 +206,7 @@ const OrderSummary = ({ form, deliveryCost }: OrderSummaryProps) => {
                       <CheckCircle className="w-5 h-5 text-green-600" />
                     </p>
                     <p className="text-xs text-green-700">
-                      You saved ৳{deliveryCost} on delivery
+                      ডেলিভারিতে আপনি ৳{deliveryCost} সাশ্রয় করেছেন
                     </p>
                   </div>
                 </div>
@@ -129,14 +221,14 @@ const OrderSummary = ({ form, deliveryCost }: OrderSummaryProps) => {
 
           {/* Total */}
           <div className="flex justify-between items-center py-2 bg-gray-50 px-4 rounded-lg">
-            <span className="text-lg font-bold text-gray-900">Total</span>
+            <span className="text-lg font-bold text-gray-900">সর্বমোট</span>
             <div className="text-right">
               <span className="text-2xl font-bold text-primary">
                 ৳{subtotal}
               </span>
               {isFreeDelivery && (
                 <p className="text-sm text-green-600 font-semibold">
-                  Including FREE delivery
+                  বিনামূল্যে ডেলিভারি সহ
                 </p>
               )}
             </div>
@@ -152,14 +244,14 @@ const OrderSummary = ({ form, deliveryCost }: OrderSummaryProps) => {
               <FormItem>
                 <FormLabel className="font-bold text-lg flex items-center gap-2">
                   <CreditCard className="w-5 h-5" />
-                  Payment Method
+                  <span>পেমেন্ট মেথড</span>
                 </FormLabel>
                 <FormControl>
                   <RadioGroup
                     value={field.value}
                     defaultValue="cash_on_delivery"
                   >
-                    <div className="flex items-center space-x-3 p-4 border-2 border-primary rounded-lg hover:border-primary/50 hover:bg-gray-50 transition-all cursor-pointer">
+                    <div className="flex items-center space-x-3 p-4 border-2 border-primary rounded-lg bg-primary/5 hover:bg-gray-50 transition-all cursor-pointer">
                       <RadioGroupItem
                         className="sr-only"
                         value="cash_on_delivery"
@@ -177,7 +269,7 @@ const OrderSummary = ({ form, deliveryCost }: OrderSummaryProps) => {
                             Cash on Delivery
                           </p>
                           <p className="text-sm text-gray-600">
-                            Pay when you receive your order
+                            অর্ডার পেলে পেমেন্ট করুন
                           </p>
                         </div>
                       </Label>
@@ -200,12 +292,12 @@ const OrderSummary = ({ form, deliveryCost }: OrderSummaryProps) => {
             {form.formState.isSubmitting ? (
               <div className="flex items-center gap-2">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Processing...
+                অর্ডার করা হচ্ছে...
               </div>
             ) : (
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5" />
-                Place Order
+                অর্ডার করুন
               </div>
             )}
           </Button>

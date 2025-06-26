@@ -55,31 +55,19 @@ export default function CheckoutPage() {
   const shippingOptions = [
     {
       id: "outside_dhaka",
-      title: "Outside Dhaka",
-      subtitle: "Standard Delivery",
-      duration: "3-5 days",
+      title: "ঢাকার বাইরে",
+      subtitle: "স্ট্যান্ডার্ড ডেলিভারি",
+      duration: "৩-৫ দিন",
       price: 120,
       icon: <Package className="w-5 h-5" />,
-      features: [
-        "Nationwide coverage",
-        "Secure packaging",
-        "Insurance included",
-      ],
-      popular: false,
     },
     {
       id: "inside_dhaka",
-      title: "Inside Dhaka",
-      subtitle: "Express Delivery",
-      duration: "1-3 days",
+      title: "ঢাকার ভিতরে",
+      subtitle: "এক্সপ্রেস ডেলিভারি",
+      duration: "১-৩ দিন",
       price: 60,
       icon: <Truck className="w-5 h-5" />,
-      features: [
-        "Same day delivery available",
-        "Real-time tracking",
-        "Priority handling",
-      ],
-      popular: true,
     },
   ];
 

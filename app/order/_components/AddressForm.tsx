@@ -222,7 +222,7 @@ const AddressForm = ({ form }: AddressFormProps) => {
                           isLoadingAreas
                             ? "Loading areas..."
                             : !city
-                            ? "Select city first"
+                            ? "প্রথমে বিভাগ নির্বাচন করুন"
                             : placeholder
                         }
                       />
@@ -264,7 +264,9 @@ const AddressForm = ({ form }: AddressFormProps) => {
                       } ${!area ? "opacity-50" : ""}`}
                     >
                       <SelectValue
-                        placeholder={!area ? "Select area first" : placeholder}
+                        placeholder={
+                          !area ? "প্রথমে জেলা নির্বাচন করুন" : placeholder
+                        }
                       />
                     </SelectTrigger>
                     <SelectContent>
@@ -308,10 +310,10 @@ const AddressForm = ({ form }: AddressFormProps) => {
         <div className="flex items-center justify-between mb-2">
           <h3 className="font-semibold text-gray-900 flex items-center gap-2">
             <Building className="w-5 h-5 text-primary" />
-            Delivery Address
+            ডেলিভারি ঠিকানা
           </h3>
           <Badge variant="outline" className="text-primary border-primary">
-            {completedSteps.length}/6 Complete
+            {completedSteps.length}/6 সম্পূর্ণ
           </Badge>
         </div>
 
@@ -328,40 +330,30 @@ const AddressForm = ({ form }: AddressFormProps) => {
       <div>
         {/* Personal Information */}
         <div className="grid lg:grid-cols-2 gap-4 mb-4">
-          {renderFormField("fullName", "Full Name", "Enter your full name")}
-          {renderFormField("phone", "Phone Number", "Enter your phone number")}
+          {renderFormField("fullName", "পুরো নাম", "আপনার পুরো নাম লিখুন")}
+          {renderFormField(
+            "phone",
+            "মোবাইল নাম্বর",
+            "আপনার মোবাইল নাম্বর লিখুন"
+          )}
         </div>
 
         {/* Location Information */}
         <div className="space-y-4">
-          {renderFormField(
-            "city",
-            "Division",
-            "Select your division",
-            "select"
-          )}
-          {renderFormField(
-            "area",
-            "District",
-            "Select your district",
-            "select"
-          )}
+          {renderFormField("city", "বিভাগ", " বিভাগ সিলেক্ট করুন", "select")}
+          {renderFormField("area", "জেলা", "জেলা সিলেক্ট করুন", "select")}
           {renderFormField(
             "upazila",
-            "Upazila",
-            "Select your upazila",
+            "উপজেলা",
+            "উপজেলা সিলেক্ট করুন",
             "select"
           )}
         </div>
 
         {/* Address Details */}
         <div className="grid lg:grid-cols-2 gap-4 my-4">
-          {renderFormField(
-            "address",
-            "Street Address",
-            "Enter your street address"
-          )}
-          {renderFormField("zipCode", "Postal Code", "Enter postal code")}
+          {renderFormField("address", "ঠিকানা", "আপনার সম্পূর্ণ ঠিকানা লিখুন")}
+          {renderFormField("zipCode", "পোস্ট কোড", "পোস্ট কোড লিখুন")}
         </div>
 
         {/* Order Notes */}
@@ -372,14 +364,14 @@ const AddressForm = ({ form }: AddressFormProps) => {
             <FormItem>
               <FormLabel className="flex items-center gap-2 font-semibold text-gray-700">
                 <FileText className="w-4 h-4 text-gray-500" />
-                Order Notes
+                অর্ডার নোট
                 <Badge variant="secondary" className="text-xs">
                   Optional
                 </Badge>
               </FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Any special instructions for delivery? (e.g., floor number, nearby landmarks, preferred delivery time)"
+                  placeholder="ডেলিভারির জন্য কোন বিশেষ নির্দেশাবলী আছে? (যেমন, ফ্লোর নম্বর, কাছাকাছি ল্যান্ডমার্ক, পছন্দের ডেলিভারি সময়)"
                   className="min-h-[80px] resize-none border-gray-300 hover:border-gray-400 focus:border-primary transition-colors"
                   {...field}
                 />
