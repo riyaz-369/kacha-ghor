@@ -15,11 +15,43 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Truck, Clock, Package } from "lucide-react";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
+import OrderSuccessPopup from "./_components/OrderSuccessPopup";
+
+export interface OrderItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+}
 
 export default function CheckoutPage() {
   const [deliveryCost, setDeliveryCost] = useState(60);
   const [selectedShipping, setSelectedShipping] =
     useState<ShippingMethod>("outside_dhaka");
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [orderData, setOrderData] = useState<any>(null);
+
+  const items: OrderItem[] = [
+    {
+      id: "1",
+      name: "Saffron- জাফরান",
+      price: 200,
+      quantity: 1,
+      image: "/placeholder.jpg",
+    },
+  ];
+
+  const [localItems, setLocalItems] = useState<OrderItem[]>(items);
+
+  // Calculate subtotal based on current quantities
+  const subtotal = localItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
 
   const form = useForm<AddressFormValues>({
     resolver: zodResolver(AddressFormSchema),
@@ -32,7 +64,7 @@ export default function CheckoutPage() {
       address: "",
       zipCode: "",
       notes: "",
-      shippingMethod: "inside_dhaka",
+      shippingMethod: "outside_dhaka",
       paymentMethod: "cash_on_delivery",
     },
   });
@@ -48,8 +80,64 @@ export default function CheckoutPage() {
   };
 
   const onSubmit = async (data: AddressFormValues) => {
-    console.log("form data", data);
-    // Add loading state and success handling here
+    try {
+      const invoice = `INV-${Date.now()}`;
+      const orderPayload = [
+        {
+          invoice: invoice,
+          recipient_name: data.fullName,
+          recipient_address: `${data.address}, ${data.area}, ${data.upazila}, ${data.city}, ${data.zipCode}`,
+          recipient_phone: data.phone,
+          cod_amount: String(subtotal + deliveryCost),
+          note: data.notes || null,
+        },
+      ];
+
+      const response = await fetch("/api/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orders: orderPayload,
+        }),
+      });
+
+      const result = await response.json();
+      // console.log("Steadfast result:", result);
+
+      if (response.ok) {
+        // Prepare order data for success popup
+        const successOrderData = {
+          invoice: invoice,
+          fullName: data.fullName,
+          phone: data.phone,
+          address: `${data.address}, ${data.area}, ${data.upazila}, ${data.city}, ${data.zipCode}`,
+          shippingMethod: data.shippingMethod,
+          paymentMethod: data.paymentMethod,
+          notes: data.notes,
+          items: localItems,
+          subtotal: subtotal,
+          deliveryCost: deliveryCost,
+          total: subtotal,
+        };
+
+        setOrderData(successOrderData);
+        setShowSuccessPopup(true);
+        form.reset();
+        toast.success("Order placed successfully!");
+      } else {
+        console.error("Order failed: " + JSON.stringify(result));
+        toast.error("Order failed. Please try again.");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Something went wrong placing the order.");
+    }
+  };
+
+  const handleCloseSuccessPopup = () => {
+    setShowSuccessPopup(false);
+    // Optionally redirect to home page or reset form
+    // window.location.href = '/';
   };
 
   const shippingOptions = [
@@ -157,10 +245,27 @@ export default function CheckoutPage() {
 
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-4">
-            <OrderSummary form={form} deliveryCost={deliveryCost} />
+            <OrderSummary
+              form={form}
+              deliveryCost={deliveryCost}
+              localItems={localItems}
+              setLocalItems={setLocalItems}
+              subtotal={subtotal}
+            />
           </div>
         </form>
       </Form>
+
+      {/* Order Success Popup */}
+      {orderData && (
+        <OrderSuccessPopup
+          isOpen={showSuccessPopup}
+          onClose={handleCloseSuccessPopup}
+          orderData={orderData}
+        />
+      )}
+
+      <Toaster />
     </div>
   );
 }

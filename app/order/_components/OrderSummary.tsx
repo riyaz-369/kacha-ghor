@@ -25,44 +25,25 @@ import {
   Plus,
   Minus,
 } from "lucide-react";
-import { useState } from "react";
-
-interface OrderItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
+import { OrderItem } from "../page";
 
 interface OrderSummaryProps {
   form: UseFormReturn<AddressFormValues>;
   deliveryCost: number;
-  items?: OrderItem[];
+  localItems: OrderItem[];
+  setLocalItems: (items: OrderItem[]) => void;
   onUpdateQuantity?: (itemId: string, newQuantity: number) => void;
+  subtotal?: number; // Optional prop for subtotal
 }
 
 const OrderSummary = ({
   form,
   deliveryCost,
-  items = [
-    {
-      id: "1",
-      name: "Item Name",
-      price: 200,
-      quantity: 2,
-      image: "/placeholder.jpg",
-    },
-  ],
+  setLocalItems,
+  localItems,
   onUpdateQuantity,
+  subtotal,
 }: OrderSummaryProps) => {
-  const [localItems, setLocalItems] = useState<OrderItem[]>(items);
-
-  // Calculate subtotal based on current quantities
-  const subtotal = localItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
   const isFreeDelivery = deliveryCost > 0;
 
   const handleQuantityChange = (itemId: string, newQuantity: number) => {
